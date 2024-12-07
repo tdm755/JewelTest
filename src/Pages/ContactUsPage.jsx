@@ -67,10 +67,10 @@ function ContactUsPage() {
         <div className="flex gap-10">
           <div className="relative">
             <select className='border relative z-10 cursor-pointer bg-transparent rounded-full pl-7 w-32 pr-2 py-2 flex gap-2 items-center justify-center outline-none appearance-none' name="" id="">
-              <option value="">short</option>
-              <option value="">10</option>
-              <option value="">20</option>
-              <option value="">40</option>
+              <option value="">Show 10</option>
+              <option value="">Show 20</option>
+              <option value="">Show 40</option>
+              <option value="">Show 80</option>
             </select>
             <img className='absolute right-4 z-0 top-2.5 w-5' src={ArrowDown} alt="" />
           </div>
@@ -136,8 +136,8 @@ function ContactUsPage() {
                             <p className='mt-2 text-gray-600'>{msg.message}</p>
                           </div>
                           <div className="p-6 bg-gray-50 rounded-xl m-4 shadow-sm flex items-center justify-center gap-4">
-                            {msg.img.map((item, index)=>{
-                              return <div key={index} className="w-32 h-32 hover:scale-105 transition-all duration-300 ease-in-out border rounded-lg flex items-center justify-center relative" style={{backgroundImage : `url(${item})`, backgroundSize : 'cover', backgroundPosition : 'center'}}></div>
+                            {msg.img.map((item, index) => {
+                              return <div key={index} className="w-32 h-32 hover:scale-105 transition-all duration-300 ease-in-out border rounded-lg flex items-center justify-center relative" style={{ backgroundImage: `url(${item})`, backgroundSize: 'cover', backgroundPosition: 'center' }}></div>
                             })}
                           </div>
                         </div>

@@ -51,11 +51,11 @@ function Header({setLogoutModal}) {
                         </div>
                     </div>
                     <div className={`bg-white ${dropDown ? 'h-52 w-64' : 'h-0 w-0'} flex flex-col gap-1 transition-all duration-500 ease-in-out absolute top-16 right-0 rounded-3xl overflow-hidden shadow-2xl`}>
-                        <NavLink to={'/'}>
+                        <NavLink to={'/dashboard'}>
                             {({ isActive }) => (
-                                <div className={`h-12 w-full  ${isActive ? 'bg-primary-default text-white' : 'text-primary-text'} hover:bg-primary-default flex gap-4 items-center justify-start px-4 group cursor-pointer transition-all`}>
+                                <div className={`h-12 w-full  ${pathname === '/dashboard' ? 'bg-primary-default text-white' : 'text-primary-text'} hover:bg-primary-default flex gap-4 items-center justify-start px-4 group cursor-pointer transition-all`}>
                                     <ColorableSvg color="" width={24} height={24}>
-                                        <HomeSVGComponent color={pathname === ('/') && 'white'} />
+                                        <HomeSVGComponent color={pathname === ('/dashboard') && 'white'} />
                                     </ColorableSvg>
                                     <span className='group-hover:text-white'>Dashboard</span>
                                 </div>

@@ -49,11 +49,11 @@ function SideBar({setLogoutModal}) {
                     {/* Dashboard Section */}
                     <div className="flex flex-col gap-1">
                         <h4 className='text-gray-500 text-sm font-medium'>Menu</h4>
-                        <NavLink to={'dashboard'}>
+                        <NavLink to={'/dashboard'}>
                             {({ isActive }) => (
-                                <div className={`h-12 w-full border rounded-2xl ${isActive ? 'bg-primary-default text-white' : 'text-primary-text'} hover:bg-primary-default flex gap-4 items-center justify-start px-4 group cursor-pointer transition-all`}>
+                                <div className={`h-12 w-full border rounded-2xl ${pathname === '/dashboard' ? 'bg-primary-default text-white' : 'text-primary-text'} hover:bg-primary-default flex gap-4 items-center justify-start px-4 group cursor-pointer transition-all`}>
                                     <ColorableSvg color="" width={24} height={24}>
-                                        <HomeSVGComponent color={pathname === ('/') && 'white'} />
+                                        <HomeSVGComponent color={pathname === ('/dashboard') && 'white'} />
                                     </ColorableSvg>
                                     <span className='group-hover:text-white'>Dashboard</span>
                                 </div>
@@ -109,19 +109,19 @@ function SideBar({setLogoutModal}) {
                                 </div>
                             )}
                         </NavLink>
-                        <NavLink to={'addmembers'}>
+                        <NavLink to={'users'}>
                             {({ isActive }) => (
-                                <div className={`h-12 w-full cursor-not-allowed border rounded-2xl ${isActive ? 'bg-primary-default text-white' : 'text-primary-text'} hover:bg-primary-default flex gap-4 items-center justify-start px-4 group cursor-pointer transition-all`}>
+                                <div className={`h-12 w-full border rounded-2xl ${isActive ? 'bg-primary-default text-white' : 'text-primary-text'} hover:bg-primary-default flex gap-4 items-center justify-start px-4 group cursor-pointer transition-all`}>
                                     <ColorableSvg color="" width={24} height={24}>
-                                        <AddMemSVGComponent color={pathname === ('addmembers') && 'white'} />
+                                        <AddMemSVGComponent color={pathname === ('users') && 'white'} />
                                     </ColorableSvg>
-                                    <span className='group-hover:text-white'>Add New Members</span>
+                                    <span className='group-hover:text-white'>Manage Members</span>
                                 </div>
                             )}
                         </NavLink>
                         <NavLink to={'sip'}>
                             {({ isActive }) => (
-                                <div className={`h-12 w-full border cursor-not-allowed rounded-2xl ${isActive ? 'bg-primary-default text-white' : 'text-primary-text'} hover:bg-primary-default flex gap-4 items-center justify-start px-4 group cursor-pointer transition-all`}>
+                                <div className={`h-12 w-full border  rounded-2xl ${isActive ? 'bg-primary-default text-white' : 'text-primary-text'} hover:bg-primary-default flex gap-4 items-center justify-start px-4 group cursor-pointer transition-all`}>
                                     <ColorableSvg color="" width={24} height={24}>
                                         <SIPIconSVGComponent color={pathname === ('sip') && 'white'} />
                                     </ColorableSvg>
@@ -131,7 +131,7 @@ function SideBar({setLogoutModal}) {
                         </NavLink>
                         <NavLink to={'emi'}>
                             {({ isActive }) => (
-                                <div className={`h-12 w-full border cursor-not-allowed rounded-2xl ${isActive ? 'bg-primary-default text-white' : 'text-primary-text'} hover:bg-primary-default flex gap-4 items-center justify-start px-4 group cursor-pointer transition-all`}>
+                                <div className={`h-12 w-full border  rounded-2xl ${isActive ? 'bg-primary-default text-white' : 'text-primary-text'} hover:bg-primary-default flex gap-4 items-center justify-start px-4 group cursor-pointer transition-all`}>
                                     <ColorableSvg color="" width={24} height={24}>
                                         <EMIIconSVGComponent color={pathname === ('emi') && 'white'} />
                                     </ColorableSvg>
@@ -141,7 +141,7 @@ function SideBar({setLogoutModal}) {
                         </NavLink>
                         <NavLink to={'kitty'}>
                             {({ isActive }) => (
-                                <div className={`h-12 w-full border cursor-not-allowed rounded-2xl ${isActive ? 'bg-primary-default text-white' : 'text-primary-text'} hover:bg-primary-default flex gap-4 items-center justify-start px-4 group cursor-pointer transition-all`}>
+                                <div className={`h-12 w-full border  rounded-2xl ${isActive ? 'bg-primary-default text-white' : 'text-primary-text'} hover:bg-primary-default flex gap-4 items-center justify-start px-4 group cursor-pointer transition-all`}>
                                     <ColorableSvg color="" width={24} height={24}>
                                         <KittyIconSVGComponent color={pathname === ('kitty') && 'white'} />
                                     </ColorableSvg>
@@ -149,16 +149,7 @@ function SideBar({setLogoutModal}) {
                                 </div>
                             )}
                         </NavLink>
-                        <NavLink to={'users'}>
-                            {({ isActive }) => (
-                                <div className={`h-12 w-full border rounded-2xl ${isActive ? 'bg-primary-default text-white' : 'text-primary-text'} hover:bg-primary-default flex gap-4 items-center justify-start px-4 group cursor-pointer transition-all`}>
-                                    <ColorableSvg color="" width={24} height={24}>
-                                        <UserSVGComponent color={pathname === ('users') && 'white'} />
-                                    </ColorableSvg>
-                                    <span className='group-hover:text-white'>Users</span>
-                                </div>
-                            )}
-                        </NavLink>
+                      
                     </div>
 
 
@@ -167,7 +158,7 @@ function SideBar({setLogoutModal}) {
                         <h4 className='text-gray-500 text-sm font-medium'>Actions</h4>
                         <NavLink to={'setting'}>
                             {({ isActive }) => (
-                                <div className={`h-12 w-full border cursor-not-allowed rounded-2xl ${isActive ? 'bg-primary-default text-white' : 'text-primary-text'} hover:bg-primary-default flex gap-4 items-center justify-start px-4 group cursor-pointer transition-all`}>
+                                <div className={`h-12 w-full border  rounded-2xl ${isActive ? 'bg-primary-default text-white' : 'text-primary-text'} hover:bg-primary-default flex gap-4 items-center justify-start px-4 group cursor-pointer transition-all`}>
                                     <ColorableSvg color="" width={24} height={24}>
                                         <SettingSVGComponent color={pathname === ('setting') && 'white'} />
                                     </ColorableSvg>

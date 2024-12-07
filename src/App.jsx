@@ -8,6 +8,8 @@ import NotificationPage from './Pages/NotificationPage'
 import Dashboard from './Pages/Dashboard'
 import ProductPage from './Pages/ProductPage'
 import Users from './Pages/Users'
+import AddNewMember from './Pages/AddNewMember'
+import LoginCredentials from './Authentication/LoginCredentials'
 
 function App() {
   const [logoutModal, setLogoutModal] = useState(false);
@@ -15,9 +17,12 @@ function App() {
   return (
     <>
       <CoverRoute>
-        <Route path="/" element={<Layout setLogoutModal={setLogoutModal} />} >
-          <Route path="dashboard" element={<Dashboard />} />
+        <Route path="/" element={<LoginCredentials />} />
+        <Route path="dashboard" element={<Layout setLogoutModal={setLogoutModal} />} >
+          <Route index element={<Dashboard />} />
+          {/* <Route path="" element={<Dashboard />} /> */}
           <Route path="productdetails" element={<ProductPage />} />
+          <Route path="addmembers" element={<AddNewMember />} />
           <Route path="contactusdetails" element={<ContactUsPage />} />
           <Route path="users" element={<Users />} />
           <Route path="notificationpage" element={<NotificationPage />} />
