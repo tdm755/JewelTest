@@ -62,8 +62,8 @@ function ContactUsPage() {
   )
 
   return (
-    <div className='p-6 rounded-xl flex flex-col gap-7'>
-      <div className="h-40 w-full border rounded-3xl bg-white p-6 shadow-sm flex justify-center items-center gap-10">
+    <div className='p-2 md:p-6 rounded-xl flex flex-col gap-7'>
+      <div className=" h-40 w-full border rounded-3xl bg-white p-6 shadow-sm flex flex-col md:flex-row justify-center items-center gap-10">
         <div className="flex gap-10">
           <div className="relative">
             <select className='border relative z-10 cursor-pointer bg-transparent rounded-full pl-7 w-32 pr-2 py-2 flex gap-2 items-center justify-center outline-none appearance-none' name="" id="">
@@ -90,7 +90,7 @@ function ContactUsPage() {
       </div>
 
       <div className="min-h-[500px] w-full border rounded-3xl bg-white overflow-hidden shadow-sm">
-        <div className="p-6">
+        <div className="p-6 overflow-x-auto">
           <table className='w-full border-separate border-spacing-x-1 '>
             <thead>
               <tr className='bg-gray-50'>

@@ -26,15 +26,21 @@ function UserDetails() {
     const [modules, setModules] = useState({
         SIP: {
             baseRate: 12,
-            tenures: [12, 24, 36]
+            tenures: [12, 24, 36],
+            minAmount: 1000,
+            maxAmount: 100000
         },
         EMI: {
             baseRate: 15,
-            tenures: [3, 6, 12]
+            tenures: [3, 6, 12],
+            minAmount: 5000,
+            maxAmount: 500000
         },
         KITTY: {
-            baseRate: 8,
-            tenures: [6, 12, 18]
+            tenures: [6, 12, 18],
+            minAmount: 10000,
+            maxAmount: 100000,
+            adminContributionMonth: 1
         }
     });
 
@@ -51,22 +57,32 @@ function UserDetails() {
     });
 
     const calculateMonthlyAmount = (totalAmount, tenure, moduleType, userId, customProfitPercentage = 0) => {
-        const baseRate = getEffectiveRate(userId, moduleType);
-        const adjustedRate = baseRate + customProfitPercentage;
-        const monthlyRate = adjustedRate / 100 / 12;
-
-        if (moduleType === 'EMI') {
-            const emi = (totalAmount * monthlyRate * Math.pow(1 + monthlyRate, tenure)) /
-                (Math.pow(1 + monthlyRate, tenure) - 1);
-            return Math.round(emi);
-        } else {
-            const baseMonthly = totalAmount / tenure;
-            const interestComponent = baseMonthly * monthlyRate;
-            return Math.round(baseMonthly + interestComponent);
+        switch(moduleType) {
+            case 'KITTY':
+                return Math.round(totalAmount / tenure);
+            
+            case 'EMI':
+                const emiRate = (getEffectiveRate(userId, 'EMI') + customProfitPercentage) / 100 / 12;
+                const emi = (totalAmount * emiRate * Math.pow(1 + emiRate, tenure)) /
+                    (Math.pow(1 + emiRate, tenure) - 1);
+                return Math.round(emi);
+            
+            case 'SIP':
+                const sipRate = (getEffectiveRate(userId, 'SIP') + customProfitPercentage) / 100 / 12;
+                const baseMonthly = totalAmount / tenure;
+                const interestComponent = baseMonthly * sipRate;
+                return Math.round(baseMonthly + interestComponent);
+            
+            default:
+                return 0;
         }
     }
 
     const calculateTotalWithInterest = (baseAmount, tenure, moduleType, userId, customProfitPercentage = 0) => {
+        if (moduleType === 'KITTY') {
+            return baseAmount;
+        }
+
         const monthlyAmount = calculateMonthlyAmount(baseAmount, tenure, moduleType, userId, customProfitPercentage);
         return monthlyAmount * tenure;
     }
@@ -85,6 +101,8 @@ function UserDetails() {
     }
 
     const calculateInterestPercentage = (pkg) => {
+        if (pkg.moduleType === 'KITTY') return 0;
+        
         const { moduleType } = pkg;
         const baseRate = modules[moduleType].baseRate;
         const userSpecificRate = userSpecificRates[pkg.userId]?.[moduleType] || 0;
@@ -125,6 +143,19 @@ function UserDetails() {
     const addNewModule = () => {
         if (!selectedUser || !newModule.baseAmount || !newModule.tenure) return;
 
+        const moduleConfig = modules[newModule.moduleType];
+        
+        if (newModule.baseAmount < moduleConfig.minAmount || 
+            newModule.baseAmount > moduleConfig.maxAmount) {
+            alert(`${newModule.moduleType} amount must be between ₹${moduleConfig.minAmount} and ₹${moduleConfig.maxAmount}`);
+            return;
+        }
+
+        if (!moduleConfig.tenures.includes(parseInt(newModule.tenure))) {
+            alert(`Invalid tenure for ${newModule.moduleType}. Available options: ${moduleConfig.tenures.join(', ')} months`);
+            return;
+        }
+
         const today = new Date();
         const endDate = new Date(today);
         endDate.setMonth(endDate.getMonth() + parseInt(newModule.tenure));
@@ -135,28 +166,23 @@ function UserDetails() {
             startDate: today.toISOString().split('T')[0],
             endDate: endDate.toISOString().split('T')[0],
             baseAmount: parseInt(newModule.baseAmount),
-            totalAmount: calculateTotalWithInterest(
-                parseInt(newModule.baseAmount),
-                parseInt(newModule.tenure),
-                newModule.moduleType,
-                selectedUser.id,
-                newModule.profitPercentage
-            ),
+            totalAmount: parseInt(newModule.baseAmount),
             status: 'Active',
             details: newModule.details,
             items: newModule.items,
             tenure: parseInt(newModule.tenure),
             moduleType: newModule.moduleType,
             userId: selectedUser.id,
-            profitPercentage: parseFloat(newModule.profitPercentage) || 0,
+            profitPercentage: 0,
             monthlyAmount: calculateMonthlyAmount(
                 parseInt(newModule.baseAmount),
                 parseInt(newModule.tenure),
                 newModule.moduleType,
                 selectedUser.id,
-                newModule.profitPercentage
+                0
             ),
-            paidMonths: []
+            paidMonths: [],
+            adminContributionMonth: moduleConfig.adminContributionMonth
         };
 
         const updatedUser = {
@@ -304,7 +330,7 @@ function UserDetails() {
 
 
     return (
-        <div className='p-6 rounded-xl flex flex-col gap-7 relative mb-20'>
+        <div className='p-2 md:p-6 rounded-xl flex flex-col gap-7 relative mb-20'>
             {/* Header Section */}
             <div className="flex justify-between items-center mb-4">
 
@@ -313,59 +339,58 @@ function UserDetails() {
             {/* Add New User Modal */}
             {showAddUserForm && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black z-50 bg-opacity-50">
-                    <div className="bg-white p-6 rounded-lg shadow-lg">
+                    <div className="bg-white py-6 px-4 rounded-3xl mx-1 shadow-lg">
                         <h3 className="text-lg font-semibold mb-4">Add New Member</h3>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                                 <input
                                     type="text"
                                     value={newUser.name}
                                     onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                                    className="w-full border rounded-lg px-3 py-2"
-                                    placeholder="Enter name"
+                                    className="w-full border rounded-xl px-4 py-2.5 outline-none focus:border-primary-default"
+                                    placeholder="Enter your full name"
                                 />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
                                 <input
-                                    type="text"
+                                    type="number"
                                     value={newUser.phone}
                                     onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
-                                    className="w-full border rounded-lg px-3 py-2"
+                                    className="w-full border rounded-xl px-4 py-2.5 outline-none focus:border-primary-default"
                                     placeholder="Enter phone"
                                 />
                             </div>
-                            <div>
+                            <div className='col-span-2'>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                                 <input
                                     type="email"
                                     value={newUser.email}
                                     onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                                    className="w-full border rounded-lg px-3 py-2"
+                                    className="w-full border rounded-xl px-4 py-2.5 outline-none focus:border-primary-default"
                                     placeholder="Enter email"
                                 />
                             </div>
-                            <div>
+                            <div className='col-span-2'>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                                <input
-                                    type="text"
+                                <textarea                                   
                                     value={newUser.address}
                                     onChange={(e) => setNewUser({ ...newUser, address: e.target.value })}
-                                    className="w-full border rounded-lg px-3 py-2"
+                                    className="w-full border rounded-xl px-4 py-2.5 outline-none focus:border-primary-default"
                                     placeholder="Enter address"
                                 />
                             </div>
                             <div className="col-span-2 flex justify-end gap-4">
                                 <button
                                     onClick={() => setShowAddUserForm(false)}
-                                    className="px-4 py-2 border rounded-lg hover:bg-gray-50"
+                                    className='border px-8 rounded-full py-1.5 bg-primary-secondary'
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={addNewUser}
-                                    className="px-4 py-2 bg-primary-default text-white rounded-lg hover:bg-primary-dark"
+                                    className='border px-8 rounded-full py-1.5 bg-primary-default text-white'
                                 >
                                     Add Member
                                 </button>
@@ -376,10 +401,10 @@ function UserDetails() {
             )}
 
             {/* Search and Filter UI */}
-            <div className="h-52 w-full border rounded-3xl bg-white p-6 shadow-sm flex flex-col justify-center items-center gap-10">
-                <div className="flex gap-10">
+            <div className=" w-full border rounded-3xl bg-white p-6 shadow-sm flex flex-col justify-center items-center gap-10">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-10 w-full ">
                     <div className="relative">
-                        <select className='border relative z-10 cursor-pointer bg-transparent rounded-full pl-7 w-36 pr-2 py-2 flex gap-2 items-center justify-center outline-none appearance-none' name="" id="">
+                        <select className='border relative z-10 cursor-pointer bg-transparent rounded-full pl-7 w-full pr-2 py-2 flex gap-2 items-center justify-center outline-none appearance-none' name="" id="">
                             <option value="">Show 10</option>
                             <option value="">Show 20</option>
                             <option value="">Show 40</option>
@@ -387,8 +412,8 @@ function UserDetails() {
                         </select>
                         <img className='absolute right-4 z-0 top-3 w-5' src={ArrowDown} alt="" />
                     </div>
-                    <div className="relative">
-                        <select className='border relative z-10 cursor-pointer bg-transparent rounded-full pl-7 w-36 pr-2 py-2 flex gap-2 items-center justify-center outline-none appearance-none' name="" id="">
+                    <div className="relative ">
+                        <select className='border relative z-10 cursor-pointer bg-transparent rounded-full pl-7 w-full pr-2 py-2 flex gap-2 items-center justify-center outline-none appearance-none' name="" id="">
                             <option value="">Short By</option>
                             <option className='' value="">All</option>
                             <option className='text-green-500' value="">Active</option>
@@ -397,10 +422,10 @@ function UserDetails() {
                         <img className='absolute right-4 z-0 top-3 w-5' src={ArrowDown} alt="" />
                     </div>
 
-                    <button onClick={() => setAscDesc(!AscDesc)} className='border rounded-full pl-7 w-40 pr-2 py-2 flex gap-2 items-center justify-center'><span className=''>{AscDesc ? 'Ascending' : 'Descending'}</span> <img className={`w-5 ${AscDesc ? 'rotate-90' : '-rotate-90'}`} src={ArrowIcon} alt="" /> </button>
+                    <button onClick={() => setAscDesc(!AscDesc)} className='border rounded-full pl-7 w-full pr-2 py-2 flex gap-2 items-center col-span-2 md:col-span-1 justify-center'><span className=''>{AscDesc ? 'Ascending' : 'Descending'}</span> <img className={`w-5 ${AscDesc ? 'rotate-90' : '-rotate-90'}`} src={ArrowIcon} alt="" /> </button>
 
-                    <div className="relative">
-                        <select className='border relative z-10 cursor-pointer bg-transparent rounded-full pl-7 w-44 pr-2 py-2 flex gap-2 items-center justify-center outline-none appearance-none' name="" id="">
+                    <div className="relative col-span-2 md:col-span-1">
+                        <select className='border relative z-10 cursor-pointer bg-transparent rounded-full pl-7 w-full pr-2 py-2 flex gap-2 items-center justify-center outline-none appearance-none' name="" id="">
                             <option className='' value="">All</option>
                             <option className='' value="">SIP Members</option>
                             <option className='' value="">EMI Members</option>
@@ -409,13 +434,13 @@ function UserDetails() {
                         <img className='absolute right-4 z-0 top-3 w-5' src={ArrowDown} alt="" />
                     </div>
                 </div>
-                <div className="flex gap-10">
-                    <div className="w-96 h-12 border rounded-full flex items-center px-4">
+                <div className="flex flex-col-reverse w-full md:flex-row gap-10">
+                    <div className="h-12 border rounded-full flex items-center px-4">
                         <img src={SearchIcon} alt="" className="w-5 h-5 mr-2" />
                         <input
                             type="text"
                             placeholder="Search users..."
-                            className="flex-1 outline-none"
+                            className="flex-1 w-full outline-none"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                         />
@@ -432,7 +457,7 @@ function UserDetails() {
 
             {/* Users Table */}
             <div className="min-h-[500px] w-full border rounded-3xl bg-white overflow-hidden shadow-sm">
-                <div className="p-6">
+                <div className="p-6 overflow-x-auto">
                     <table className='w-full border-separate border-spacing-x-1'>
                         <thead>
                             <tr className='bg-gray-50'>
@@ -450,15 +475,15 @@ function UserDetails() {
                                 <React.Fragment key={user.id}>
                                     <tr className={`border-b cursor-pointer hover:bg-gray-50 transition-colors duration-200 ${expandedRow === user.id ? 'bg-gray-50' : ''}`}>
                                         <td className='px-4 py-6'>{index + 1}</td>
-                                        <td className='px-4 py-6'>{user.name}</td>
-                                        <td className='px-4 py-6'>{user.phone}</td>
+                                        <td className='px-4 py-6 whitespace-nowrap'>{user.name}</td>
+                                        <td className='px-4 py-6 whitespace-nowrap'>{user.phone}</td>
                                         <td className='px-4 py-6'>{user.email}</td>
-                                        <td className='px-4 py-6'>
+                                        <td className='px-4 py-6 '>
                                             <span className={`px-3 py-1 rounded-full text-sm ${user.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                                                 {user.status}
                                             </span>
                                         </td>
-                                        <td className='px-4 py-6'>
+                                        <td className='px-4 py-6 whitespace-nowrap'>
                                             {user.packages.filter(pkg => pkg.status === 'Active').length} Active
                                         </td>
                                         <td className='px-4 py-6 flex items-center gap-4 justify-center'>
@@ -470,7 +495,7 @@ function UserDetails() {
                                             />
                                             <button
                                                 onClick={() => handleManageUser(user)}
-                                                className='border px-4 py-1 rounded-full bg-primary-secondary text-primary-default'
+                                                className='border px-4 py-1 rounded-full whitespace-nowrap bg-primary-secondary text-primary-default'
                                             >
                                                 Manage User
                                             </button>
@@ -531,9 +556,9 @@ function UserDetails() {
             </div>
 
             {/* User Management Sidebar */}
-            <div className={`scrollbarOf2 absolute top-0 right-0 bottom-0 ${userDetailsManagementPage ? ' w-full p-6 ' : 'w-0 p-0'} transition-all duration-500 ease-in-out z-50 overflow-y-auto bg-white rounded-3xl`}>
-                <div className="flex justify-between items-center mb-6">
-                    <h2 className={`text-2xl font-bold ${userDetailsManagementPage === false && 'hidden'}`}>User Management</h2>
+            <div className={`scrollbarOf2 absolute top-0 right-0 bottom-0 ${userDetailsManagementPage ? ' w-full py-6 p-2 md:p-4 lg:p-6 ' : 'w-0 p-0'} transition-all duration-500 ease-in-out z-50 overflow-y-auto bg-white rounded-3xl`}>
+                <div className="flex justify-end items-center mb-6">
+                    
                     <button
                         onClick={HandleUserDetailModalCloseButton}
                         className="text-gray-600 hover:text-gray-800 border px-6 py-2 rounded-full"
@@ -547,7 +572,7 @@ function UserDetails() {
                         {/* User Details Section */}
                         <div className="rounded-lg p-6 mb-6 bg-gray-50">
                             <h3 className="text-lg font-semibold mb-4">User Details</h3>
-                            <div className="grid grid-cols-4 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                 <div className='border rounded-xl p-2'>
                                     <p className="text-gray-600">Name</p>
                                     <p className="font-medium">{selectedUser.name}</p>
@@ -569,7 +594,7 @@ function UserDetails() {
                             {/* Module Interest Rates Section */}
                             <div className="rounded-lg py-10">
                                 <h3 className="text-lg font-semibold mb-4">Module Interest Rates</h3>
-                                <div className="flex gap-4">
+                                <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
                                     {Object.entries(modules).map(([moduleName, moduleData]) => (
                                         <div key={moduleName} className="flex w-full items-center justify-between border bg-white p-4 rounded-xl">
                                             <div>
@@ -608,9 +633,9 @@ function UserDetails() {
                         {showAddModuleForm && (
                             <div className="bg-gray-50 rounded-lg p-6 mb-6">
                                 <h3 className="text-lg font-semibold mb-4">Add New Module</h3>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="flex col-span-2 gap-4">
-                                        <div className='w-1/3'>
+                                <div className="grid grid-cols-1 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 w-full gap-4">
+                                        <div className='w-full '>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                                 Module Type
                                             </label>
@@ -624,7 +649,7 @@ function UserDetails() {
                                                 <option value="KITTY">KITTY</option>
                                             </select>
                                         </div>
-                                        <div className='w-1/3'>
+                                        <div className='w-full '>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                                 Tenure (months)
                                             </label>
@@ -639,7 +664,7 @@ function UserDetails() {
                                                 ))}
                                             </select>
                                         </div>
-                                        <div className='w-1/3'>
+                                        <div className='w-full '>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                                 Items
                                             </label>
@@ -651,7 +676,7 @@ function UserDetails() {
                                                 placeholder="Enter items"
                                             />
                                         </div>
-                                        <div className='w-1/3'>
+                                        <div className='w-full '>
                                             <label className="block text-sm font-medium text-gray-700 mb-1">
                                                 Base Amount
                                             </label>
@@ -665,7 +690,6 @@ function UserDetails() {
                                         </div>
                                     </div>
 
-
                                     <div className="col-span-2">
                                         <label className="block text-sm font-medium text-gray-700 mb-1">
                                             Details
@@ -678,6 +702,7 @@ function UserDetails() {
                                             rows="3"
                                         />
                                     </div>
+
                                     <div className="col-span-2 flex justify-end gap-4">
                                         <button
                                             onClick={() => setShowAddModuleForm(false)}
@@ -692,6 +717,7 @@ function UserDetails() {
                                             Add Module
                                         </button>
                                     </div>
+                                    
                                 </div>
                             </div>
                         )}
@@ -701,7 +727,7 @@ function UserDetails() {
                         <div className="space-y-6">
                             <h3 className="text-lg font-semibold">Active Plans</h3>
                             {selectedUser.packages.length > 0 ? selectedUser.packages.map((pkg, index) => (
-                                <div key={index} className="bg-white rounded-lg border p-6">
+                                <div key={index} className="bg-white rounded-lg border p-2 md:p-4 lg:p-6">
                                     <div
                                         className="flex justify-between items-center mb-4 cursor-pointer"
                                         onClick={() => togglePlanExpansion(pkg.id)}
@@ -723,39 +749,39 @@ function UserDetails() {
                                     </div>
 
                                     <div className={`transition-all duration-300 ${expandedPlans[pkg.id] ? 'block' : 'hidden'}`}>
-                                        <div className="grid grid-cols-4 gap-4 mb-6">
-                                            <div>
+                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+                                            <div className='border rounded-xl p-2'>
                                                 <p className="text-gray-600">Start Date</p>
                                                 <p>{pkg.startDate}</p>
                                             </div>
-                                            <div>
+                                            <div className='border rounded-xl p-2'>
                                                 <p className="text-gray-600">End Date</p>
                                                 <p>{pkg.endDate}</p>
                                             </div>
-                                            <div>
+                                            <div className='border rounded-xl p-2'>
                                                 <p className="text-gray-600">Monthly Amount</p>
                                                 <p>₹{pkg.monthlyAmount}</p>
                                             </div>
-                                            <div>
+                                            <div className='border rounded-xl p-2'>
                                                 <p className="text-gray-600">Interest Percentage</p>
                                                 <p>{calculateInterestPercentage(pkg)}%</p>
                                             </div>
                                         </div>
 
-                                        <div className="grid grid-cols-4 gap-4 mb-6">
-                                            <div>
+                                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+                                            <div className='border rounded-xl p-2'>
                                                 <p className="text-gray-600">Total Amount</p>
                                                 <p>₹{pkg.totalAmount}</p>
                                             </div>
-                                            <div>
+                                            <div className='border rounded-xl p-2'>
                                                 <p className="text-gray-600">Total Interest</p>
                                                 <p>₹{calculateTotalInterest(pkg)}</p>
                                             </div>
-                                            <div>
+                                            <div className='border rounded-xl p-2'>
                                                 <p className="text-gray-600">Total Profit</p>
                                                 <p>₹{calculateTotalProfit(pkg)}</p>
                                             </div>
-                                            <div>
+                                            <div className='border rounded-xl p-2'>
                                                 <p className="text-gray-600">Remaining Amount</p>
                                                 <p>₹{getRemainingAmount(pkg)}</p>
                                             </div>
@@ -766,7 +792,7 @@ function UserDetails() {
                                             <div className="text-sm mb-2">
                                                 Total Penalty: <span className="text-red-600">₹{pkg.paidMonths.reduce((total, pm) => total + (pm.penalty || 0), 0)}</span>
                                             </div>
-                                            <div className="grid grid-cols-3 gap-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                                 {Array.from({ length: pkg.tenure }).map((_, i) => {
                                                     const isPaid = isPaidMonth(pkg, i + 1);
                                                     const paidAmount = getPaidAmount(pkg, i + 1);

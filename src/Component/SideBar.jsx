@@ -5,7 +5,7 @@ import ContactUsIcon from '../../public/assets/SVGs/ContactUsIcon.svg';
 import UserIcon from '../../public/assets/SVGs/UserIcon.svg';
 import SettingIcon from '../../public/assets/SVGs/SettingIcon.svg';
 import ArrowIcon from '../../public/assets/SVGs/ArrowIcon.svg';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import ContactSVGComponent from '../../public/assets/SVGComponents/ContactUsIcon';
 import ColorableSvg from '../Hooks/ColorableSvg';
 import HomeSVGComponent from '../../public/assets/SVGComponents/HomeIcon';
@@ -23,10 +23,12 @@ import NotificationIconSVGComponent from '../../public/assets/SVGComponents/Noti
 import AddMemSVGComponent from '../../public/assets/SVGComponents/AddMemIcon';
 
 
-function SideBar({setLogoutModal}) {
+function SideBar({isSideBarOpen, setIsSideBarOpen, setLogoutModal}) {
     const audioRef = useRef(null);
     const location = useLocation();
     const { pathname } = location;
+
+    const navigate = useNavigate();
 
     const handleLogout = () => {
         audioRef.current.play();
@@ -34,7 +36,7 @@ function SideBar({setLogoutModal}) {
     }
 
     return (
-        <div className='fixed top-2 left-2 bottom-2 rounded-2xl bg-white w-[270px] p-3 overflow-y-auto scrollbarOf'>
+        <div onClick={()=>{setIsSideBarOpen(false)}} className={`fixed top-2 ${isSideBarOpen ? 'left-2' : '-left-[280px]'} lg:left-2 shadow-2xl lg:shadow-none  bottom-2 rounded-2xl bg-white w-[270px] p-3 overflow-y-auto scrollbarOf z-50 transition-all duration-500 ease-in-out`}>
             <div className="flex flex-col gap-7 mb- items-center justify-between h-full">
                 <div className="flex flex-col items-center justify-center w-full h-40 bg-white">
                     <div className="text-xl font-bold text-gray-800 tracking-wide">
@@ -182,7 +184,7 @@ function SideBar({setLogoutModal}) {
                         <audio ref={audioRef} muted src={ClickSound} className="hidden" />
                         <div className="flex justify-between w-full">
                             <button onClick={handleLogout} className='px-10 py-2 bg-white rounded-full'>Logout</button>
-                            <button className='px-2 py-2 w-10 h-10 bg-white rounded-full flex items-center justify-center'><img className='-rotate-45 w-5' src={ArrowIcon} alt="" /></button>
+                            <button onClick={()=>(navigate('setting'))} className='px-2 py-2 w-10 h-10 bg-white rounded-full flex items-center justify-center'><img className='-rotate-45 w-5' src={ArrowIcon} alt="" /></button>
                         </div>
                     </div>
                 </div>

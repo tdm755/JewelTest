@@ -7,11 +7,11 @@ function Dashboard() {
     const [pendingRequests, setPendingRequests] = useState(25)
 
     return (
-        <div className='py-6'>
-            <div className="flex items-start justify-between gap-7">
-                <div className="w-[65%] flex flex-col gap-7">
+        <div className='py-6 px-2 lg:px-0'>
+            <div className="flex flex-col lg:flex-row items-start justify-between gap-7">
+                <div className="w-full lg:w-[65%] flex flex-col gap-7">
                     <div className="flex flex-wrap gap-7 items-center justify-center">
-                        <div className="w-[47%] h-44 border rounded-[35px] bg-gradient-to-br from-purple-50 to-white p-6 hover:shadow-lg transition-all duration-300 cursor-pointer">
+                        <div className="w-full lg:w-[45%] xl:w-[47%] h-44 border rounded-[35px] bg-gradient-to-br from-purple-50 to-white p-6 hover:shadow-lg transition-all duration-300 cursor-pointer">
                             <div className="flex justify-between items-start">
                                 <div>
                                     <h3 className="text-gray-600 text-lg mb-2">Total Users</h3>
@@ -30,7 +30,7 @@ function Dashboard() {
                                 12% from last month
                             </p>
                         </div>
-                        <div className="w-[47%] h-44 border rounded-[35px] bg-gradient-to-br from-blue-50 to-white p-6 hover:shadow-lg transition-all duration-300 cursor-pointer">
+                        <div className="w-full lg:w-[45%] xl:w-[47%] h-44 border rounded-[35px] bg-gradient-to-br from-blue-50 to-white p-6 hover:shadow-lg transition-all duration-300 cursor-pointer">
                             <div className="flex justify-between items-start">
                                 <div>
                                     <h3 className="text-gray-600 text-lg mb-2">Active Packages</h3>
@@ -49,7 +49,7 @@ function Dashboard() {
                                 15% from last month
                             </p>
                         </div>
-                        <div className="w-[47%] h-44 border rounded-[35px] bg-gradient-to-br from-green-50 to-white p-6 hover:shadow-lg transition-all duration-300 cursor-pointer">
+                        <div className="w-full lg:w-[45%] xl:w-[47%] h-44 border rounded-[35px] bg-gradient-to-br from-green-50 to-white p-6 hover:shadow-lg transition-all duration-300 cursor-pointer">
                             <div className="flex justify-between items-start">
                                 <div>
                                     <h3 className="text-gray-600 text-lg mb-2">Completed Packages</h3>
@@ -68,7 +68,7 @@ function Dashboard() {
                                 5% from last month
                             </p>
                         </div>
-                        <div className="w-[47%] h-44 border rounded-[35px] bg-gradient-to-br from-orange-50 to-white p-6 hover:shadow-lg transition-all duration-300 cursor-pointer">
+                        <div className="w-full lg:w-[45%] xl:w-[47%] h-44 border rounded-[35px] bg-gradient-to-br from-orange-50 to-white p-6 hover:shadow-lg transition-all duration-300 cursor-pointer">
                             <div className="flex justify-between items-start">
                                 <div>
                                     <h3 className="text-gray-600 text-lg mb-2">Pending Requests</h3>
@@ -93,7 +93,7 @@ function Dashboard() {
                         {/* Timeline will go here */}
                     </div>
                 </div>
-                <div className="w-[35%] flex flex-col gap-7">
+                <div className=" w-full lg:w-[35%] flex flex-col gap-7">
                     <div className="h-[500px] border bg-white rounded-[35px] p-6">
                         <h2 className="text-xl font-bold mb-4">Top Performing Users</h2>
                         {/* Top users list will go here */}

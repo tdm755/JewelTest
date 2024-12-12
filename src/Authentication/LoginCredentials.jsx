@@ -19,12 +19,12 @@ function LoginCredentials() {
   };
 
   return (
-    <div className='h-[100vh]' style={{backgroundImage : `url(${JewelleryDoodle})`, backgroundSize : 'cover', backgroundPosition : 'center', backgroundRepeat : 'no-repeat'}}>
-      <div className="flex items-center justify-center h-full gap-2">
-        <div className={`${!view ? 'w-[600px] h-[600px]' : 'w-32 h-32'} shadow-2xl transition-all duration-500 ease-in-out rounded-full bg-white flex items-center justify-center overflow-hidden`}>
+    <div className='h-[100vh]'>
+      <div className="flex flex-col md:flex-row items-center justify-center h-full gap-2">
+        <div className={`${!view ? 'w-full md:w-1/2 h-[600px]' : 'w-32 h-32'} shadow-2xl transition-all duration-500 ease-in-out rounded-full bg-white flex items-center justify-center overflow-hidden`}>
           {!view ? (
             <div className="w-[400px] flex flex-col gap-7">
-              <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center">Forgot Password</h2>
+              <h2 className="text-3xl text-primary-default mb-10 text-center tracking-wide">Forgot Password</h2>
               <form className='flex flex-col gap-5'>
                 <div className="mb-4">
                   <input
@@ -35,26 +35,29 @@ function LoginCredentials() {
                 </div>
                 <div className="flex flex-col items-center gap-4">
                   <button 
-                    className="w-full bg-primary-default text-white font-bold py-3 px-4 rounded-xl hover:bg-primary-secondary transition-colors"
+                   className="bg-primary-default hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-full focus:outline-none focus:shadow-outline w-64"
                     type="submit"
                   >
                     Reset Password
                   </button>
                   <button
                     onClick={() => setView(true)}
-                    className="text-primary-default hover:text-primary-secondary transition-colors"
+                    className="hover:text-primary-default text-gray-500 transition-colors"
                     type="button"
                   >
-                    Back to Login
+                    Return to Login Portal
                   </button>
                 </div>
               </form>
             </div>
           ) : <img className='w-24 hover:scale-105 transition-all duration-300 ease-in-out cursor-pointer rounded-full' src={CompanyLogo} alt="" />}
         </div>
-        <div className={`${view ? 'w-[600px] h-[600px]' : 'w-32 h-32'} shadow-2xl transition-all duration-500 ease-in-out rounded-full bg-white flex items-center justify-center overflow-hidden`}>
+        <div className={`${view ? 'w-full md:w-1/2 h-[600px]' : 'w-32 h-32'} border border-primary-secondary shadow-2xl transition-all duration-500 ease-in-out rounded-full bg-white flex items-center justify-center overflow-hidden`}>
          {view ?  <div className="w-[400px] flex flex-col gap-7">
-            <h2 className="text-2xl font-bold text-gray-800 mb-8 text-center">Admin Login</h2>
+          <div className="">
+          <h2 className="text-xl text-primary-default text-center tracking-wide">Admin Login</h2>
+          <h2 className="text-3xl text-primary-default mb-10 text-center tracking-wide">Welcome Back!</h2>
+          </div>
             <form className='flex flex-col gap-5' onSubmit={handleSubmit}>
               <div className="">
                 <div className="mb-4">
@@ -85,7 +88,7 @@ function LoginCredentials() {
                 </div>
               </div>
               <div className="flex flex-col items-center justify-between">
-                <div className="flex items-center justify-between mb-6 w-full">
+                <div className="flex w-[80%] items-center justify-between mb-6">
                   <div className="flex items-center">
                     <input
                       id="remember-me"
@@ -94,12 +97,12 @@ function LoginCredentials() {
                       checked={credentials.rememberMe}
                       onChange={(e) => setCredentials({ ...credentials, rememberMe: e.target.checked })}
                     />
-                    <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+                    <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-600  hover:text-primary-default cursor-pointer">
                       Remember me
                     </label>
                   </div>
                   <div className="text-sm">
-                    <button onClick={()=>setView(false)} className="font-medium text-primary-default hover:text-primary-secondary">
+                    <button onClick={()=>setView(false)} className=" hover:text-primary-default text-gray-600">
                       Forgot password?
                     </button>
                   </div>

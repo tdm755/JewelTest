@@ -7,7 +7,7 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import HomeSVGComponent from '../../public/assets/SVGComponents/HomeIcon';
 import SettingSVGComponent from '../../public/assets/SVGComponents/SettingIcon';
 
-function Header({setLogoutModal}) {
+function Header({ isSideBarOpen, setIsSideBarOpen, setLogoutModal }) {
     const [SearchBarOpen, setSearchBarOpen] = useState(false);
     const [dropDown, setDropDown] = useState(false);
 
@@ -18,12 +18,12 @@ function Header({setLogoutModal}) {
 
 
     return (
-        <div className='fixed top-0 pt-2 right-2 h-20  left-[290px] flex justify-between items-center bg-[#ecedf8] z-50'>
+        <div className={`fixed px-4 top-0 pt-2 right-2 h-20 left-0 lg:left-[270px] flex justify-between items-center bg-[#ecedf8] z-50`}>
 
             {/* LeftSection */}
-            <div className="px-12 flex flex-col gap-1">
+            <div className=" lg:px-12 flex flex-col gap-1">
                 <h2 className='text-2xl font-semibold text-[#46467f]'>{pathname === '/contactusdetails' ? 'Contact Messages' : pathname === '/notificationpage' ? 'Notifications' : pathname === '/productdetails' ? 'Products' : pathname === '/users' ? 'User Details' : 'Dashboard'}</h2>
-                <div className="text-xs  text-gray-500 ml-16">
+                <div className="text-xs  text-gray-500 ">
                     <span>-</span>
                     <button>{pathname === '/contactusdetails' ? 'Contact Messages' : pathname === '/notificationpage' ? 'Notifications' : pathname === '/productdetails' ? 'Products' : pathname === '/users' ? 'Users' : 'Dashboard'}</button>
                 </div>
@@ -31,8 +31,8 @@ function Header({setLogoutModal}) {
 
 
             {/* RightSection */}
-            <div className="px-10 flex gap-4">
-                <div className="">
+            <div className="lg:px-10 flex gap-4">
+                <div className="hidden lg:block">
                     <div className={`overflow-hidden rounded-full relative ${SearchBarOpen ? 'w-96 justify-end px-1.5' : 'w-11 justify-center'} h-11 bg-white flex items-center gap-4  transition-all duration-500 ease-in-out`}>
                         <div className={` rounded-full bg-white absolute ${SearchBarOpen ? 'px-5 border-r p-2.5 left-0' : ''}`}>
                             <img onClick={() => { setSearchBarOpen(true) }} className='w-5 cursor-pointer ' src={SearchIcon} alt="" />
@@ -40,12 +40,12 @@ function Header({setLogoutModal}) {
                         <input autoFocus={SearchBarOpen} className={`${SearchBarOpen ? 'w-[90%]' : 'w-0 hidden'} border pl-7 outline-none rounded-r-full p-1.5`} type="text" />
                     </div>
                 </div>
-                <div onClick={() => {navigate('notificationpage')}} className=" rounded-full w-11 h-11 cursor-pointer bg-white flex items-center justify-center"><img className='w-5' src={NotificationIcon} alt="" /></div>
+                <div onClick={() => { navigate('notificationpage') }} className=" rounded-full w-11 h-11 cursor-pointer bg-white flex items-center justify-center"><img className='w-5' src={NotificationIcon} alt="" /></div>
 
-                <div onClick={() => setDropDown(!dropDown)} className="relative">
+                <div onClick={() => {setDropDown(!dropDown); setIsSideBarOpen(false)}} className="relative">
                     <div className="flex gap-4 cursor-pointer">
                         <div className=" rounded-full w-11 h-11 bg-white" style={{ backgroundImage: `url('https://avatar.iran.liara.run/public/boy')`, backgroundSize: 'cover' }}></div>
-                        <div className="flex flex-col">
+                        <div className="flex-col hidden xl:flex">
                             <span className='text-sm'>Admin User</span>
                             <span className='text-xs text-gray-500'>Admin</span>
                         </div>
@@ -82,9 +82,18 @@ function Header({setLogoutModal}) {
                             )}
                         </NavLink>
                         <div className="flex justify-center w-full">
-                            <button onClick={()=>setLogoutModal(true)} className='px-10 py-2 bg-[#ecedf8] rounded-full'>Logout</button>
+                            <button onClick={() => setLogoutModal(true)} className='px-10 py-2 bg-[#ecedf8] rounded-full'>Logout</button>
                         </div>
                     </div>
+                </div>
+
+                <div className="flex items-center justify-center lg:hidden">
+                    <input onClick={() => { setIsSideBarOpen(!isSideBarOpen); setDropDown(false) }} type="checkbox" id="checkbox" checked={isSideBarOpen} />
+                    <label for="checkbox" className="toggle">
+                        <div className="bars" id="bar1"></div>
+                        <div className="bars" id="bar2"></div>
+                        <div className="bars" id="bar3"></div>
+                    </label>
                 </div>
 
             </div>
