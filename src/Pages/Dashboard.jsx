@@ -1,10 +1,39 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 function Dashboard() {
     const [totalUsers, setTotalUsers] = useState(1250)
     const [activePackages, setActivePackages] = useState(850)
     const [completedPackages, setCompletedPackages] = useState(400)
     const [pendingRequests, setPendingRequests] = useState(25)
+    const [recentPayments, setRecentPayments] = useState([])
+    const [missedPayments, setMissedPayments] = useState([])
+    const [consistentPayers, setConsistentPayers] = useState([])
+
+    
+
+    useEffect(() => {
+        // Here you would fetch data from your backend/storage
+        // For now using mock data
+        const mockRecentPayments = [
+            { id: 1, name: "John Doe", amount: 5000, date: "2024-01-15", moduleType: "SIP" },
+            { id: 2, name: "Jane Smith", amount: 10000, date: "2024-01-14", moduleType: "EMI" },
+            { id: 3, name: "Mike Johnson", amount: 7500, date: "2024-01-13", moduleType: "KITTY" }
+        ]
+
+        const mockMissedPayments = [
+            { id: 4, name: "Alice Brown", dueDate: "2024-01-10", moduleType: "SIP", missedAmount: 3000 },
+            { id: 5, name: "Bob Wilson", dueDate: "2024-01-08", moduleType: "EMI", missedAmount: 8000 }
+        ]
+
+        const mockConsistentPayers = [
+            { id: 6, name: "Sarah Davis", streak: "6 months", moduleType: "KITTY" },
+            { id: 7, name: "Tom Harris", streak: "12 months", moduleType: "SIP" }
+        ]
+
+        setRecentPayments(mockRecentPayments)
+        setMissedPayments(mockMissedPayments)
+        setConsistentPayers(mockConsistentPayers)
+    }, [])
 
     return (
         <div className='py-6 px-2 lg:px-0'>
@@ -89,18 +118,48 @@ function Dashboard() {
                         </div>
                     </div>
                     <div className="h-[500px] bg-white rounded-[35px] p-6">
-                        <h2 className="text-xl font-bold mb-4">Recent Activities Timeline</h2>
-                        {/* Timeline will go here */}
+                        <h2 className="text-xl font-bold mb-4">Recent Payment Activities</h2>
+                        <div className="space-y-4">
+                            {recentPayments.map(payment => (
+                                <div key={payment.id} className="flex items-center justify-between p-3 border rounded-lg">
+                                    <div>
+                                        <h3 className="font-semibold">{payment.name}</h3>
+                                        <p className="text-sm text-gray-600">{payment.moduleType}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="font-semibold text-green-600">₹{payment.amount}</p>
+                                        <p className="text-sm text-gray-500">{payment.date}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
-                <div className=" w-full lg:w-[35%] flex flex-col gap-7">
+                <div className="w-full lg:w-[35%] flex flex-col gap-7">
                     <div className="h-[500px] border bg-white rounded-[35px] p-6">
-                        <h2 className="text-xl font-bold mb-4">Top Performing Users</h2>
-                        {/* Top users list will go here */}
+                        <h2 className="text-xl font-bold mb-4">Missed Payments</h2>
+                        <div className="space-y-4">
+                            {missedPayments.map(user => (
+                                <div key={user.id} className="p-3 border rounded-lg bg-red-50">
+                                    <h3 className="font-semibold">{user.name}</h3>
+                                    <p className="text-sm text-gray-600">{user.moduleType}</p>
+                                    <p className="text-sm text-red-600">Due: ₹{user.missedAmount}</p>
+                                    <p className="text-xs text-gray-500">Due Date: {user.dueDate}</p>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                     <div className="h-[380px] bg-white rounded-[35px] p-6">
-                        <h2 className="text-xl font-bold mb-4">Package Types Distribution</h2>
-                        {/* Package types chart will go here */}
+                        <h2 className="text-xl font-bold mb-4">Consistent Payers</h2>
+                        <div className="space-y-4">
+                            {consistentPayers.map(user => (
+                                <div key={user.id} className="p-3 border rounded-lg bg-green-50">
+                                    <h3 className="font-semibold">{user.name}</h3>
+                                    <p className="text-sm text-gray-600">{user.moduleType}</p>
+                                    <p className="text-sm text-green-600">Consistent for {user.streak}</p>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>

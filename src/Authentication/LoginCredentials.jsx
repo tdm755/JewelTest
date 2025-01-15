@@ -50,7 +50,10 @@ function LoginCredentials() {
                 </div>
               </form>
             </div>
-          ) : <img className='w-24 hover:scale-105 transition-all duration-300 ease-in-out cursor-pointer rounded-full' src={CompanyLogo} alt="" />}
+          ) : 
+          // <img className='w-24 hover:scale-105 transition-all duration-300 ease-in-out cursor-pointer rounded-full' src={CompanyLogo} alt="" />
+          <span>Your Logo</span>
+          }
         </div>
         <div className={`${view ? 'w-full md:w-1/2 h-[600px]' : 'w-32 h-32'} border border-primary-secondary shadow-2xl transition-all duration-500 ease-in-out rounded-full bg-white flex items-center justify-center overflow-hidden`}>
          {view ?  <div className="w-[400px] flex flex-col gap-7">
@@ -116,7 +119,10 @@ function LoginCredentials() {
                 </button>
               </div>
             </form>
-          </div> :  <img className='w-24 hover:scale-105 transition-all duration-300 ease-in-out cursor-pointer rounded-full' src={CompanyLogo} alt="" />}
+          </div> : 
+          //  <img className='w-24 hover:scale-105 transition-all duration-300 ease-in-out cursor-pointer rounded-full' src={CompanyLogo} alt="" />
+          <span>Your Logo</span>
+           }
         </div>
       </div>
     </div>

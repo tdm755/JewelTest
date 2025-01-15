@@ -25,22 +25,23 @@ function UserDetails() {
     // Default module configurations
     const [modules, setModules] = useState({
         SIP: {
-            baseRate: 12,
             tenures: [12, 24, 36],
             minAmount: 1000,
-            maxAmount: 100000
+            maxAmount: 100000,
+            hasInterest: true
         },
         EMI: {
-            baseRate: 15,
             tenures: [3, 6, 12],
             minAmount: 5000,
-            maxAmount: 500000
+            maxAmount: 500000,
+            hasInterest: true
         },
         KITTY: {
             tenures: [6, 12, 18],
             minAmount: 10000,
             maxAmount: 100000,
-            adminContributionMonth: 1
+            adminContributionMonth: 1,
+            hasInterest: false
         }
     });
 
@@ -56,40 +57,61 @@ function UserDetails() {
         joinDate: new Date().toISOString().split('T')[0],
     });
 
-    const calculateMonthlyAmount = (totalAmount, tenure, moduleType, userId, customProfitPercentage = 0) => {
-        switch(moduleType) {
-            case 'KITTY':
-                return Math.round(totalAmount / tenure);
-            
-            case 'EMI':
-                const emiRate = (getEffectiveRate(userId, 'EMI') + customProfitPercentage) / 100 / 12;
-                const emi = (totalAmount * emiRate * Math.pow(1 + emiRate, tenure)) /
-                    (Math.pow(1 + emiRate, tenure) - 1);
-                return Math.round(emi);
-            
-            case 'SIP':
-                const sipRate = (getEffectiveRate(userId, 'SIP') + customProfitPercentage) / 100 / 12;
-                const baseMonthly = totalAmount / tenure;
-                const interestComponent = baseMonthly * sipRate;
-                return Math.round(baseMonthly + interestComponent);
-            
-            default:
-                return 0;
+    // Function to calculate EMI
+    const calculateEMI = (principal, ratePerYear, tenureMonths) => {
+        // Convert annual rate to monthly rate (and percentage to decimal)
+        const monthlyRate = (ratePerYear / 12) / 100;
+        
+        // If rate is 0, return simple division
+        if (monthlyRate === 0) {
+            return principal / tenureMonths;
         }
-    }
 
-    const calculateTotalWithInterest = (baseAmount, tenure, moduleType, userId, customProfitPercentage = 0) => {
+        // EMI = P * r * (1 + r)^n / ((1 + r)^n - 1)
+        const emi = (principal * monthlyRate * Math.pow(1 + monthlyRate, tenureMonths)) / 
+                    (Math.pow(1 + monthlyRate, tenureMonths) - 1);
+        
+        return Math.round(emi);
+    };
+
+    // Function to calculate SIP monthly amount
+    const calculateSIP = (principal, ratePerYear, tenureMonths) => {
+        // For SIP, we'll use simple interest calculation
+        const monthlyBase = principal / tenureMonths;
+        const monthlyInterest = (monthlyBase * ratePerYear) / (12 * 100);
+        return Math.round(monthlyBase + monthlyInterest);
+    };
+
+    // Main calculation function
+    const calculateMonthlyAmount = (baseAmount, tenure, moduleType, userId) => {
         if (moduleType === 'KITTY') {
-            return baseAmount;
+            return Math.round(baseAmount / tenure); // Simple division for KITTY
         }
 
-        const monthlyAmount = calculateMonthlyAmount(baseAmount, tenure, moduleType, userId, customProfitPercentage);
-        return monthlyAmount * tenure;
-    }
+        // Get interest rate set by admin
+        const interestRate = userSpecificRates[userId]?.[moduleType] || 0;
 
-    const calculateTotalInterest = (pkg) => {
-        return pkg.totalAmount - pkg.baseAmount;
-    }
+        if (moduleType === 'EMI') {
+            return calculateEMI(baseAmount, interestRate, tenure);
+        }
+
+        if (moduleType === 'SIP') {
+            return calculateSIP(baseAmount, interestRate, tenure);
+        }
+
+        return 0;
+    };
+
+    // Calculate total amount
+    const calculateTotalAmount = (baseAmount, tenure, moduleType, userId) => {
+        const monthlyAmount = calculateMonthlyAmount(baseAmount, tenure, moduleType, userId);
+        return monthlyAmount * tenure;
+    };
+
+    // Calculate total interest
+    const calculateTotalInterest = (baseAmount, totalAmount) => {
+        return totalAmount - baseAmount;
+    };
 
     const calculateTotalProfit = (pkg) => {
         return pkg.baseAmount * (pkg.profitPercentage / 100) * (pkg.tenure / 12);
@@ -103,11 +125,8 @@ function UserDetails() {
     const calculateInterestPercentage = (pkg) => {
         if (pkg.moduleType === 'KITTY') return 0;
         
-        const { moduleType } = pkg;
-        const baseRate = modules[moduleType].baseRate;
-        const userSpecificRate = userSpecificRates[pkg.userId]?.[moduleType] || 0;
-        const profitPercentage = pkg.profitPercentage || 0;
-        return baseRate + userSpecificRate + profitPercentage;
+        // Simply return the user-specific interest rate for this module type
+        return userSpecificRates[pkg.userId]?.[pkg.moduleType] || 0;
     };
 
     const calculateProfitAndEffectiveRate = (pkg) => {
@@ -160,29 +179,33 @@ function UserDetails() {
         const endDate = new Date(today);
         endDate.setMonth(endDate.getMonth() + parseInt(newModule.tenure));
 
+        // Calculate monthly amount based on module type and interest rate
+        const monthlyAmount = calculateMonthlyAmount(
+            parseInt(newModule.baseAmount),
+            parseInt(newModule.tenure),
+            newModule.moduleType,
+            selectedUser.id
+        );
+
+        // Calculate total amount
+        const totalAmount = monthlyAmount * parseInt(newModule.tenure);
+
         const newPkg = {
             id: `pkg${Date.now()}`,
             name: `${newModule.moduleType} Module`,
             startDate: today.toISOString().split('T')[0],
             endDate: endDate.toISOString().split('T')[0],
             baseAmount: parseInt(newModule.baseAmount),
-            totalAmount: parseInt(newModule.baseAmount),
+            totalAmount: totalAmount,
             status: 'Active',
             details: newModule.details,
             items: newModule.items,
             tenure: parseInt(newModule.tenure),
             moduleType: newModule.moduleType,
             userId: selectedUser.id,
-            profitPercentage: 0,
-            monthlyAmount: calculateMonthlyAmount(
-                parseInt(newModule.baseAmount),
-                parseInt(newModule.tenure),
-                newModule.moduleType,
-                selectedUser.id,
-                0
-            ),
+            monthlyAmount: monthlyAmount,
             paidMonths: [],
-            adminContributionMonth: moduleConfig.adminContributionMonth
+            adminContributionMonth: moduleConfig.adminContributionMonth || null
         };
 
         const updatedUser = {
@@ -204,7 +227,6 @@ function UserDetails() {
             tenure: '',
             items: '',
             details: '',
-            profitPercentage: 0
         });
     };
 
@@ -595,25 +617,57 @@ function UserDetails() {
                             <div className="rounded-lg py-10">
                                 <h3 className="text-lg font-semibold mb-4">Module Interest Rates</h3>
                                 <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                                    {Object.entries(modules).map(([moduleName, moduleData]) => (
-                                        <div key={moduleName} className="flex w-full items-center justify-between border bg-white p-4 rounded-xl">
-                                            <div>
-                                                <h4 className="font-medium">{moduleName}</h4>
-                                                <p className="text-sm text-gray-600">
-                                                    Default Rate: {moduleData.rate}%
-                                                </p>
+                                    {Object.entries(modules).map(([moduleName, moduleData]) => {
+                                        if (!moduleData.hasInterest) return null; // Skip KITTY module
+
+                                        const currentRate = userSpecificRates[selectedUser.id]?.[moduleName] || 0;
+                                        
+                                        // Calculate example values
+                                        const exampleAmount = 10000;
+                                        const exampleTenure = 12;
+                                        const monthlyPayment = calculateMonthlyAmount(
+                                            exampleAmount, 
+                                            exampleTenure, 
+                                            moduleName, 
+                                            selectedUser.id
+                                        );
+                                        const totalAmount = monthlyPayment * exampleTenure;
+                                        const totalInterest = totalAmount - exampleAmount;
+
+                                        return (
+                                            <div key={moduleName} className="flex flex-col w-full border bg-white p-4 rounded-xl">
+                                                <div className="flex justify-between items-center mb-2">
+                                                    <h4 className="font-medium">{moduleName}</h4>
+                                                </div>
+                                                <div className="flex flex-col gap-2">
+                                                    <label className="text-sm text-gray-600">
+                                                        Interest Rate (% per annum)
+                                                    </label>
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        max="100"
+                                                        step="0.1"
+                                                        placeholder="Enter interest rate"
+                                                        className="border rounded-full px-3 py-2 w-full outline-none"
+                                                        value={currentRate}
+                                                        onChange={(e) => {
+                                                            const newRate = Math.max(0, Math.min(100, parseFloat(e.target.value) || 0));
+                                                            setUserSpecificRate(selectedUser.id, moduleName, newRate);
+                                                        }}
+                                                    />
+                                                    
+                                                    <div className="mt-2 p-3 bg-gray-50 rounded-lg text-sm">
+                                                        <p>Example for ₹10,000 for 12 months:</p>
+                                                        <p>Interest Rate: {currentRate}%</p>
+                                                        <p>Monthly Payment: ₹{monthlyPayment}</p>
+                                                        <p>Total Amount: ₹{totalAmount}</p>
+                                                        <p>Total Interest: ₹{totalInterest}</p>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div className="flex items-center gap-4">
-                                                <input
-                                                    type="number"
-                                                    placeholder="Custom Rate %"
-                                                    className="border rounded-full px-3 py-2 w-44 outline-none"
-                                                    value={userSpecificRates[selectedUser.id]?.[moduleName] || ''}
-                                                    onChange={(e) => setUserSpecificRate(selectedUser.id, moduleName, parseFloat(e.target.value))}
-                                                />
-                                            </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
 
@@ -775,7 +829,7 @@ function UserDetails() {
                                             </div>
                                             <div className='border rounded-xl p-2'>
                                                 <p className="text-gray-600">Total Interest</p>
-                                                <p>₹{calculateTotalInterest(pkg)}</p>
+                                                <p>₹{calculateTotalInterest(pkg.baseAmount, pkg.totalAmount)}</p>
                                             </div>
                                             <div className='border rounded-xl p-2'>
                                                 <p className="text-gray-600">Total Profit</p>

@@ -55,6 +55,11 @@ function ContactUsPage() {
     }
   ]
 
+  const [selectedPage, setSelectedPage] = useState(1);
+  const itemPerPage = 5;
+
+
+
   const filteredMessages = messages.filter(msg =>
     msg.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     msg.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -89,7 +94,7 @@ function ContactUsPage() {
         </div>
       </div>
 
-      <div className="min-h-[500px] w-full border rounded-3xl bg-white overflow-hidden shadow-sm">
+      <div className="min-h-[500px] w-full border flex flex-col justify-between rounded-3xl bg-white overflow-hidden shadow-sm">
         <div className="p-6 overflow-x-auto">
           <table className='w-full border-separate border-spacing-x-1 '>
             <thead>
@@ -156,7 +161,18 @@ function ContactUsPage() {
             </tbody>
           </table>
         </div>
+        <div className="flex justify-end px-10">
+        <div className="flex gap-1">
+          <div className="">{'<'}</div>
+          <div className="">1</div>
+          <div className="">2</div>
+          <div className="">3</div>
+          <div className="">{'>'}</div>
+        </div>
       </div>
+      </div>
+
+      
     </div>
   )
 }
